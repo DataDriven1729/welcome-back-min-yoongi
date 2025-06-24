@@ -1,41 +1,35 @@
 
-import streamlit as st
 from PIL import Image
 import os
 import random
 import datetime
 import pytz
-import zipfile
 import json
+import time
 from google.oauth2.service_account import Credentials
 import gspread
 
+# --- ENVIRONMENT CONFIG ---
 os.environ["STREAMLIT_HOME"] = "/tmp"
+os.environ["XDG_CONFIG_HOME"] = "/tmp"
 os.environ["STREAMLIT_DISABLE_USAGE_STATS"] = "1"
 
+import streamlit as st
 
-# Unzip folders if they haven't been unzipped already
-def unzip_if_needed(zip_path, extract_to):
-    if not os.path.exists(extract_to):
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(extract_to)
-
-# Unzip all your folders
-unzip_if_needed("yoongi.gif.zip", "yoongi.gif")
-unzip_if_needed("bg-music.zip", "bg-music")
-unzip_if_needed("images.zip", "images")
-
+# --- GOOGLE SHEETS SETUP ---
 scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-creds_dict = json.loads(os.environ["GOOGLE_CREDS_JSON"])
-creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
-client = gspread.authorize(creds)
-sheet = client.open("Welcome-Back-MinYoongi")
+try:
+    creds_dict = json.loads(os.environ["GOOGLE_CREDS_JSON"])
+    creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
+    client = gspread.authorize(creds)
+    sheet = client.open("Welcome-Back-MinYoongi")
+except Exception as e:
+    st.error(f"❌ Google Sheets setup failed: {e}")
 
-
-# Page setup
+# --- PAGE CONFIG ---
 st.set_page_config(page_title="Welcome Back Yoongi", layout="centered")
 
-# Optional: Purple Ocean Mode background animation
+# --- PURPLE OCEAN MODE ---
 purple_ocean = st.toggle("🌊 Enable Purple Ocean Mode")
 if purple_ocean:
     st.markdown("""
@@ -53,63 +47,75 @@ if purple_ocean:
         </style>
     """, unsafe_allow_html=True)
 
-# Language selection
+# --- LANGUAGE SELECTOR ---
 st.sidebar.title("🌐 Choose Language")
 lang = st.sidebar.selectbox("Select your language", ["English", "한국어"], index=0)
 
 translations = {
     "English": {
         "welcome": "💜 Welcome Back, Min Yoongi 💜",
-        "countdown": "⌛ Countdown to Yoongi’s Return",
         "send_hug": "🤗 Send a Hug to Yoongi",
         "your_name": "Your Name (optional)",
         "hug_sent": "💜 Hug sent! Thank you ",
         "duplicate": "⚠️ You already sent this hug. Try changing the name!",
         "total_hugs": "🤗 Total Hugs Sent: ",
         "recent_hugs": "🌍 Recent Hugs Sent By:",
-        "view_all_hugs": "📜 View All Hugs Sent",
         "leave_msg": "💌 Leave a Message for Yoongi",
         "your_msg": "Your Message to Yoongi 💜",
         "send_msg": "📨 Send Message",
         "msg_sent": "💜 Message sent to Yoongi! Thank you!",
         "latest_msg": "📨 Latest Messages:",
-        "view_all_msg": "📜 View All Messages Sent to Yoongi",
         "love_from_army": "💖 Love from ARMYs"
     },
     "한국어": {
         "welcome": "💜 민윤기, 돌아와줘서 고마워요 💜",
-        "countdown": "⌛ 윤기의 전역까지 남은 시간",
         "send_hug": "🤗 윤기에게 포옹 보내기",
         "your_name": "이름 (선택사항)",
         "hug_sent": "💜 포옹이 전송되었습니다! 감사합니다 ",
         "duplicate": "⚠️ 이미 이 포옹을 보냈어요. 이름을 바꿔보세요!",
         "total_hugs": "🤗 총 포옹 수: ",
         "recent_hugs": "🌍 최근 포옹:",
-        "view_all_hugs": "📜 모든 포옹 보기",
         "leave_msg": "💌 윤기에게 메시지 남기기",
         "your_msg": "윤기에게 전하고 싶은 말 💜",
         "send_msg": "📨 메시지 보내기",
         "msg_sent": "💜 메시지가 전송되었습니다! 감사합니다!",
         "latest_msg": "📨 최근 메시지:",
-        "view_all_msg": "📜 윤기에게 보낸 모든 메시지 보기",
         "love_from_army": "💖 아미의 사랑"
     }
 }
 
 T = translations[lang]
 
-st.markdown(f"## {T['love_from_army']}")
-st.markdown(f"### {T['welcome']}")
-st.markdown(f"#### {T['countdown']}")
+# --- HEADER ---
+st.markdown("## " + T["love_from_army"])
+st.markdown("### 💜 Yoongi is back! Welcome home, Min Yoongi! 🎉")
+st.balloons()
 
-# Countdown
-target = datetime.datetime(2025, 6, 21, 8, 0, 0, tzinfo=pytz.timezone("Asia/Seoul"))
-now = datetime.datetime.now(pytz.timezone("Asia/Seoul"))
-diff = target - now
-st.markdown(f"<div style='font-size: 24px; font-weight: bold; color: purple;'>{diff.days} days, {diff.seconds//3600} hours, {(diff.seconds//60)%60} minutes, {diff.seconds%60} seconds 💜</div>", unsafe_allow_html=True)
-st.markdown("until June 21, 2025 – 8:00 AM")
+# Insert this block just below the header (after st.balloons())
 
-# Hugs
+# --- 🎬 RANDOM GIF ---
+gif_folder = "gif"
+gif_files = [f for f in os.listdir(gif_folder) if f.endswith(".gif")]
+if gif_files:
+    gif_choice = os.path.join(gif_folder, random.choice(gif_files))
+    st.image(gif_choice, caption="💜 Welcome back, Yoongi!", use_column_width=True)
+
+# --- 🎵 RANDOM MUSIC ---
+music_folder = "bg-music"
+music_files = [f for f in os.listdir(music_folder) if f.endswith(".mp3")]
+if music_files:
+    music_choice = os.path.join(music_folder, random.choice(music_files))
+    st.audio(music_choice, format="audio/mp3")
+
+# --- 🖼️ RANDOM IMAGE ---
+image_folder = "images"
+image_files = [f for f in os.listdir(image_folder) if f.endswith(".jpg")]
+if image_files:
+    image_choice = os.path.join(image_folder, random.choice(image_files))
+    st.image(image_choice, caption="💜 Love from ARMY", use_column_width=True)
+
+
+# --- 🤗 HUGS ---
 st.markdown(f"### {T['send_hug']}")
 name = st.text_input(T["your_name"])
 if "hugs" not in st.session_state:
@@ -126,7 +132,7 @@ if len(st.session_state["hugs"]) > 0:
     for hugger in st.session_state["hugs"][-5:][::-1]:
         st.markdown(f"- 💜 {hugger}")
 
-# Messages
+# --- 💌 MESSAGES ---
 st.markdown(f"### {T['leave_msg']}")
 message = st.text_area(T["your_msg"])
 if "msgs" not in st.session_state:
@@ -140,7 +146,7 @@ if len(st.session_state["msgs"]) > 0:
     for msg in st.session_state["msgs"][-3:][::-1]:
         st.markdown(f"- 💌 {msg}")
 
-# Footer
+# --- FOOTER ---
 st.markdown("""
 <hr>
 <div style="overflow:hidden; white-space:nowrap;">
