@@ -1,4 +1,3 @@
-
 from PIL import Image
 import os
 import random
@@ -8,33 +7,33 @@ import json
 import time
 import subprocess
 import sys
+import streamlit as st
+import re
 
+# --- FORCE INSTALL GOOGLE AUTH (in case Streamlit Cloud misses it) ---
 required_packages = [
     "google-auth",
     "google-auth-oauthlib",
     "google-auth-httplib2",
-    "google-api-python-client"
+    "google-api-python-client",
     "gspread"
 ]
 
 for pkg in required_packages:
     subprocess.call([sys.executable, "-m", "pip", "install", pkg])
 
-# ✅ Now safe to import
 from google.oauth2.service_account import Credentials
-import gspread 
+import gspread
 
 # --- ENVIRONMENT CONFIG ---
 os.environ["STREAMLIT_HOME"] = "/tmp"
 os.environ["XDG_CONFIG_HOME"] = "/tmp"
 os.environ["STREAMLIT_DISABLE_USAGE_STATS"] = "1"
 
-import streamlit as st
-
 # --- GOOGLE SHEETS SETUP ---
 scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 try:
-    creds_dict = json.loads(os.environ["GOOGLE_CREDS_JSON"])
+    creds_dict = json.loads(st.secrets["GOOGLE_CREDS_JSON"])
     creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
     client = gspread.authorize(creds)
     sheet = client.open("Welcome-Back-MinYoongi")
@@ -64,12 +63,12 @@ if purple_ocean:
 
 # --- LANGUAGE SELECTOR ---
 st.sidebar.title("🌐 Choose Language")
-lang = st.sidebar.selectbox("Select your language", ["English", "한국어(korean)"], index=0)
+lang = st.sidebar.selectbox("Select your language", ["English", "한국어"], index=0)
 
-# Make sure the language is valid
 if lang not in ["English", "한국어"]:
-    lang = "English"  # fallback
+    lang = "English"
 
+# --- TRANSLATIONS ---
 translations = {
     "English": {
         "welcome": "💜 Welcome Back, Min Yoongi 💜",
@@ -84,7 +83,8 @@ translations = {
         "send_msg": "📨 Send Message",
         "msg_sent": "💜 Message sent to Yoongi! Thank you!",
         "latest_msg": "📨 Latest Messages:",
-        "love_from_army": "💖 Love from ARMYs"
+        "love_from_army": "💖 Love from ARMYs",
+        "next_gif": "➡️ Next Gif"
     },
     "한국어": {
         "welcome": "💜 민윤기, 돌아와줘서 고마워요 💜",
@@ -99,7 +99,8 @@ translations = {
         "send_msg": "📨 메시지 보내기",
         "msg_sent": "💜 메시지가 전송되었습니다! 감사합니다!",
         "latest_msg": "📨 최근 메시지:",
-        "love_from_army": "💖 아미의 사랑"
+        "love_from_army": "💖 아미의 사랑",
+        "next_gif": "➡️ 다음 GIF"
     }
 }
 
@@ -107,17 +108,15 @@ T = translations[lang]
 
 # --- HEADER ---
 st.markdown("## " + T["love_from_army"])
-st.markdown("### 💜 Yoongi is back! Welcome home, Min Yoongi! 🎉")
+st.markdown("### " + T["welcome"])
 st.balloons()
 
-# Insert this block just below the header (after st.balloons())
 # --- 🎵 RANDOM MUSIC ---
 music_folder = "bg-music"
 music_files = [f for f in os.listdir(music_folder) if f.endswith(".mp3")]
 if music_files:
     music_choice = os.path.join(music_folder, random.choice(music_files))
     st.audio(music_choice, format="audio/mp3")
-
 
 # --- 💌 MESSAGES ---
 st.markdown(f"### {T['leave_msg']}")
@@ -133,32 +132,22 @@ if len(st.session_state["msgs"]) > 0:
     for msg in st.session_state["msgs"][-3:][::-1]:
         st.markdown(f"- 💌 {msg}")
 
-import re
-
-# Initialize gif index
+# --- 🎬 SEQUENTIAL GIFS ---
 if "gif_index" not in st.session_state:
     st.session_state.gif_index = 0
 
-# Get sorted gif files (e.g., gif1.gif → gif10.gif in correct order)
 def extract_number(filename):
     match = re.search(r'(\d+)', filename)
     return int(match.group(1)) if match else 0
 
 gif_folder = "gif"
-gif_files = sorted(
-    [f for f in os.listdir(gif_folder) if f.endswith(".gif")],
-    key=extract_number
-)
+gif_files = sorted([f for f in os.listdir(gif_folder) if f.endswith(".gif")], key=extract_number)
 
-# Show the current gif
 if gif_files:
     current_gif = os.path.join(gif_folder, gif_files[st.session_state.gif_index])
     st.image(current_gif, caption=f"💜 Yoongi - {gif_files[st.session_state.gif_index]}", use_container_width=True)
-
-    # Next button
-    if st.button("➡️ Next Gif"):
+    if st.button(T["next_gif"]):
         st.session_state.gif_index = (st.session_state.gif_index + 1) % len(gif_files)
-
 
 # --- 🤗 HUGS ---
 st.markdown(f"### {T['send_hug']}")
@@ -177,16 +166,12 @@ if len(st.session_state["hugs"]) > 0:
     for hugger in st.session_state["hugs"][-5:][::-1]:
         st.markdown(f"- 💜 {hugger}")
 
-
-
 # --- 🖼️ RANDOM IMAGE ---
 image_folder = "images"
 image_files = [f for f in os.listdir(image_folder) if f.endswith(".jpg")]
 if image_files:
     image_choice = os.path.join(image_folder, random.choice(image_files))
-    st.image(image_choice, caption="💜 Love from ARMY", use_container_width=True)
-
-
+    st.image(image_choice, caption=T["love_from_army"], use_container_width=True)
 
 # --- FOOTER ---
 st.markdown("""
