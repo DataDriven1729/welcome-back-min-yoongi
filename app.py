@@ -64,7 +64,7 @@ if purple_ocean:
 
 # --- LANGUAGE SELECTOR ---
 st.sidebar.title("🌐 Choose Language")
-lang = st.sidebar.selectbox("Select your language", ["English", "한국어"], index=0)
+lang = st.sidebar.selectbox("Select your language", ["English", "한국어(korean)"], index=0)
 
 translations = {
     "English": {
@@ -149,7 +149,7 @@ gif_files = sorted(
 # Show the current gif
 if gif_files:
     current_gif = os.path.join(gif_folder, gif_files[st.session_state.gif_index])
-    st.image(current_gif, caption=f"💜 Yoongi - {gif_files[st.session_state.gif_index]}", use_column_width=True)
+    st.image(current_gif, caption=f"💜 Yoongi - {gif_files[st.session_state.gif_index]}", use_container_width=True)
 
     # Next button
     if st.button("➡️ Next Gif"):
@@ -180,7 +180,7 @@ image_folder = "images"
 image_files = [f for f in os.listdir(image_folder) if f.endswith(".jpg")]
 if image_files:
     image_choice = os.path.join(image_folder, random.choice(image_files))
-    st.image(image_choice, caption="💜 Love from ARMY", use_column_width=True)
+    st.image(image_choice, caption="💜 Love from ARMY", use_container_width=True)
 
 
 
