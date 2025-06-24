@@ -8,7 +8,20 @@ import json
 import time
 from google.oauth2.service_account import Credentials
 import gspread
+import subprocess
 
+required_packages = [
+    "google-auth",
+    "google-auth-oauthlib",
+    "google-auth-httplib2",
+    "google-api-python-client"
+]
+
+for pkg in required_packages:
+    try:
+        __import__(pkg.split("-")[0])
+    except ImportError:
+        subprocess.call(["pip", "install", pkg])
 # --- ENVIRONMENT CONFIG ---
 os.environ["STREAMLIT_HOME"] = "/tmp"
 os.environ["XDG_CONFIG_HOME"] = "/tmp"
