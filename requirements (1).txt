@@ -1,0 +1,10 @@
+streamlit
+pillow
+pandas
+requests
+gspread
+pytz
+streamlit-lottie
+streamlit-extras
+oauth2client
+google-auth
