@@ -129,12 +129,32 @@ if len(st.session_state["msgs"]) > 0:
     for msg in st.session_state["msgs"][-3:][::-1]:
         st.markdown(f"- 💌 {msg}")
 
-# --- 🎬 RANDOM GIF ---
+import re
+
+# Initialize gif index
+if "gif_index" not in st.session_state:
+    st.session_state.gif_index = 0
+
+# Get sorted gif files (e.g., gif1.gif → gif10.gif in correct order)
+def extract_number(filename):
+    match = re.search(r'(\d+)', filename)
+    return int(match.group(1)) if match else 0
+
 gif_folder = "gif"
-gif_files = [f for f in os.listdir(gif_folder) if f.endswith(".gif")]
+gif_files = sorted(
+    [f for f in os.listdir(gif_folder) if f.endswith(".gif")],
+    key=extract_number
+)
+
+# Show the current gif
 if gif_files:
-    gif_choice = os.path.join(gif_folder, random.choice(gif_files))
-    st.image(gif_choice, caption="💜 Welcome back, Yoongi!", use_column_width=True)
+    current_gif = os.path.join(gif_folder, gif_files[st.session_state.gif_index])
+    st.image(current_gif, caption=f"💜 Yoongi - {gif_files[st.session_state.gif_index]}", use_column_width=True)
+
+    # Next button
+    if st.button("➡️ Next Gif"):
+        st.session_state.gif_index = (st.session_state.gif_index + 1) % len(gif_files)
+
 
 # --- 🤗 HUGS ---
 st.markdown(f"### {T['send_hug']}")
