@@ -66,6 +66,10 @@ if purple_ocean:
 st.sidebar.title("🌐 Choose Language")
 lang = st.sidebar.selectbox("Select your language", ["English", "한국어(korean)"], index=0)
 
+# Make sure the language is valid
+if lang not in ["English", "한국어"]:
+    lang = "English"  # fallback
+
 translations = {
     "English": {
         "welcome": "💜 Welcome Back, Min Yoongi 💜",
