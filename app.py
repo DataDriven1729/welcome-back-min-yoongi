@@ -107,14 +107,6 @@ st.markdown("### 💜 Yoongi is back! Welcome home, Min Yoongi! 🎉")
 st.balloons()
 
 # Insert this block just below the header (after st.balloons())
-
-# --- 🎬 RANDOM GIF ---
-gif_folder = "gif"
-gif_files = [f for f in os.listdir(gif_folder) if f.endswith(".gif")]
-if gif_files:
-    gif_choice = os.path.join(gif_folder, random.choice(gif_files))
-    st.image(gif_choice, caption="💜 Welcome back, Yoongi!", use_column_width=True)
-
 # --- 🎵 RANDOM MUSIC ---
 music_folder = "bg-music"
 music_files = [f for f in os.listdir(music_folder) if f.endswith(".mp3")]
@@ -122,13 +114,27 @@ if music_files:
     music_choice = os.path.join(music_folder, random.choice(music_files))
     st.audio(music_choice, format="audio/mp3")
 
-# --- 🖼️ RANDOM IMAGE ---
-image_folder = "images"
-image_files = [f for f in os.listdir(image_folder) if f.endswith(".jpg")]
-if image_files:
-    image_choice = os.path.join(image_folder, random.choice(image_files))
-    st.image(image_choice, caption="💜 Love from ARMY", use_column_width=True)
 
+# --- 💌 MESSAGES ---
+st.markdown(f"### {T['leave_msg']}")
+message = st.text_area(T["your_msg"])
+if "msgs" not in st.session_state:
+    st.session_state["msgs"] = []
+if st.button(T["send_msg"]):
+    if message:
+        st.session_state["msgs"].append(message)
+        st.success(T["msg_sent"])
+if len(st.session_state["msgs"]) > 0:
+    st.markdown(f"### {T['latest_msg']}")
+    for msg in st.session_state["msgs"][-3:][::-1]:
+        st.markdown(f"- 💌 {msg}")
+
+# --- 🎬 RANDOM GIF ---
+gif_folder = "gif"
+gif_files = [f for f in os.listdir(gif_folder) if f.endswith(".gif")]
+if gif_files:
+    gif_choice = os.path.join(gif_folder, random.choice(gif_files))
+    st.image(gif_choice, caption="💜 Welcome back, Yoongi!", use_column_width=True)
 
 # --- 🤗 HUGS ---
 st.markdown(f"### {T['send_hug']}")
@@ -147,19 +153,16 @@ if len(st.session_state["hugs"]) > 0:
     for hugger in st.session_state["hugs"][-5:][::-1]:
         st.markdown(f"- 💜 {hugger}")
 
-# --- 💌 MESSAGES ---
-st.markdown(f"### {T['leave_msg']}")
-message = st.text_area(T["your_msg"])
-if "msgs" not in st.session_state:
-    st.session_state["msgs"] = []
-if st.button(T["send_msg"]):
-    if message:
-        st.session_state["msgs"].append(message)
-        st.success(T["msg_sent"])
-if len(st.session_state["msgs"]) > 0:
-    st.markdown(f"### {T['latest_msg']}")
-    for msg in st.session_state["msgs"][-3:][::-1]:
-        st.markdown(f"- 💌 {msg}")
+
+
+# --- 🖼️ RANDOM IMAGE ---
+image_folder = "images"
+image_files = [f for f in os.listdir(image_folder) if f.endswith(".jpg")]
+if image_files:
+    image_choice = os.path.join(image_folder, random.choice(image_files))
+    st.image(image_choice, caption="💜 Love from ARMY", use_column_width=True)
+
+
 
 # --- FOOTER ---
 st.markdown("""
