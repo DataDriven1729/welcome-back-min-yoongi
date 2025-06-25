@@ -121,16 +121,30 @@ if music_files:
 # --- 💌 MESSAGES ---
 st.markdown(f"### {T['leave_msg']}")
 message = st.text_area(T["your_msg"])
-if "msgs" not in st.session_state:
-    st.session_state["msgs"] = []
+
 if st.button(T["send_msg"]):
     if message:
-        st.session_state["msgs"].append(message)
+        try:
+            worksheet = sheet.worksheet("Messages")
+        except:
+            worksheet = sheet.add_worksheet("Messages", rows="1000", cols="2")
+
+        timestamp = datetime.datetime.now(pytz.timezone("Asia/Seoul")).strftime("%Y-%m-%d %H:%M")
+        worksheet.append_row([timestamp, message])
         st.success(T["msg_sent"])
-if len(st.session_state["msgs"]) > 0:
-    st.markdown(f"### {T['latest_msg']}")
-    for msg in st.session_state["msgs"][-3:][::-1]:
-        st.markdown(f"- 💌 {msg}")
+
+# ✅ Load and show messages from Google Sheets
+try:
+    worksheet = sheet.worksheet("Messages")
+    msg_data = worksheet.get_all_values()
+
+    if msg_data:
+        st.markdown(f"### {T['latest_msg']}")
+        for row in msg_data[-3:][::-1]:  # Show last 3 messages
+            st.markdown(f"- 💌 {row[1]}")
+except:
+    st.warning("No messages yet.")
+
 
 # --- 🎬 SEQUENTIAL GIFS ---
 if "gif_index" not in st.session_state:
@@ -152,19 +166,41 @@ if gif_files:
 # --- 🤗 HUGS ---
 st.markdown(f"### {T['send_hug']}")
 name = st.text_input(T["your_name"])
+
+# Local session list (for recent display)
 if "hugs" not in st.session_state:
     st.session_state["hugs"] = []
+
 if st.button("💜 Hug"):
     if name and name not in st.session_state["hugs"]:
         st.session_state["hugs"].append(name)
+
+        # ✅ Save to Google Sheets
+        try:
+            worksheet = sheet.worksheet("Hugs")
+        except:
+            worksheet = sheet.add_worksheet("Hugs", rows="1000", cols="2")
+
+        timestamp = datetime.datetime.now(pytz.timezone("Asia/Seoul")).strftime("%Y-%m-%d %H:%M")
+        worksheet.append_row([timestamp, name])
+
         st.success(T["hug_sent"] + name)
+
     elif name in st.session_state["hugs"]:
         st.warning(T["duplicate"])
-st.markdown(f"### {T['total_hugs']}{len(st.session_state['hugs'])}")
-if len(st.session_state["hugs"]) > 0:
-    st.markdown(f"**{T['recent_hugs']}**")
-    for hugger in st.session_state["hugs"][-5:][::-1]:
-        st.markdown(f"- 💜 {hugger}")
+
+# ✅ Display total from Google Sheets instead of session only
+try:
+    worksheet = sheet.worksheet("Hugs")
+    hugs_data = worksheet.get_all_values()
+    st.markdown(f"### {T['total_hugs']}{len(hugs_data)}")
+    if hugs_data:
+        st.markdown(f"**{T['recent_hugs']}**")
+        for row in hugs_data[-5:][::-1]:
+            st.markdown(f"- 💜 {row[1]}")
+except:
+    st.warning("No hugs recorded yet.")
+
 
 # --- 🖼️ RANDOM IMAGE ---
 image_folder = "images"
